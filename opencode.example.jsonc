@@ -1,0 +1,113 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // ---------------------------------------------------------------------------
+  // Current runtime: opencode2 v0.0.0-beta-18286 (verified 2026-08-26).
+  // Plugin has NO runtime package dependency: bare index.ts + ambient types.ts.
+  // @opencode-ai/* packages are dev-only, never required at load time.
+  //
+  // The plugin polls each selected provider's /models endpoint and upserts
+  // discovered IDs into the live catalog. Keep API keys as {env:VAR} values.
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // MINIMAL (zero-config): plural "plugins" object registration. Providers
+  // from either current-beta map spelling below are auto-discovered and polled.
+  //   provider:  npm + options.baseURL
+  //   providers: package + settings.baseURL
+  // The auto rule checks a package field for "openai-compatible" or applies
+  // the compatible-root path rule to baseURL. Use <compatible-root> below as
+  // a neutral placeholder for the provider API root.
+  // ---------------------------------------------------------------------------
+  "provider": {
+    "my-gateway": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://my-gateway.example.com/<compatible-root>",
+        // {env:VAR} interpolation keeps the key out of the config file.
+        "apiKey": "{env:MY_GATEWAY_API_KEY}"
+      }
+    },
+    "another-gateway": {
+      "npm": "@ai-sdk/other",
+      "options": {
+        "baseURL": "https://another.example.com/<compatible-root>",
+        "modelsDiscovery": true
+      }
+    }
+  },
+  "providers": {
+    "settings-gateway": {
+      "package": "@ai-sdk/openai-compatible",
+      "settings": {
+        "baseURL": "https://settings.example.com/<compatible-root>"
+      }
+    }
+  },
+  "plugins": [
+    {
+      // Directory path to the plugin is the recommended registration form on
+      // opencode2 v0.0.0-beta-18721 (file-path registration is dead there:
+      // the file loads but setup() never runs).
+      "package": "/absolute/path/to/opencode-v2-model-discovery",
+      // Empty options enable zero-config auto-discovery.
+      "options": {}
+    }
+  ]
+
+  // ---------------------------------------------------------------------------
+  // OPTIONAL per-provider flag: "modelsDiscovery" (case-sensitive), under
+  // options or settings. The same fields are accepted at provider top level.
+  //   true  -> force discovery (still needs baseURL)
+  //   false -> skip this provider
+  //   { "enabled": true|false } -> force/skip
+  //   { "endpoint": "..." }     -> poll this URL instead of `${baseURL}/models`
+  // Relative endpoint URLs resolve against baseURL.
+  // Example:
+  //   "options": {
+  //     "baseURL": "https://my-gateway.example.com/<compatible-root>",
+  //     "modelsDiscovery": { "enabled": true, "endpoint": "catalog" }
+  //   }
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // ALTERNATIVE: the current beta also accepts the singular nested tuple.
+  // Manual entries explicitly name provider IDs and win on ID collisions.
+  // Setting "enabled": false blocks that ID from auto-discovery too.
+  //   "plugin": [
+  //     [
+  //       "/absolute/path/to/opencode-v2-model-discovery",
+  //       {
+  //         "providers": [
+  //           {
+  //             "id": "my-gateway",
+  //             "baseURL": "https://my-gateway.example.com/<compatible-root>",
+  //             "apiKeyEnv": "MY_GATEWAY_API_KEY",
+  //             "filter": "chat",
+  //             "enabled": true
+  //           }
+  //         ]
+  //       }
+  //     ]
+  //   ]
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // SOURCE CONTROLS AND SAFETY:
+  //   JSON and JSONC are accepted. Sources merge low -> high in this order:
+  //     OPENCODE_CONFIG,
+  //     OPENCODE_CONFIG_DIR/opencode.json then opencode.jsonc,
+  //     XDG_CONFIG_HOME/opencode/opencode.json then opencode.jsonc,
+  //     HOME/.config/opencode/opencode.json then opencode.jsonc,
+  //     ./opencode.json then opencode.jsonc,
+  //     ./.opencode/opencode.json then opencode.jsonc,
+  //     OPENCODE_CONFIG_CONTENT (highest; inline content).
+  //   Set OPENCODE_CONFIG_PROJECT_DISABLE=1/true, or its alternate
+  //   OPENCODE_DISABLE_PROJECT_CONFIG, to skip both project directories.
+  //   Plain objects deep-merge; arrays and scalar values replace lower values.
+  //   Missing, unreadable, or malformed sources warn safely and do not block
+  //   later sources. OPENCODE_MODELS_DISCOVERY_DEFAULT_ENABLED=true/false
+  //   controls the default when a provider has no explicit flag.
+  //   `/api/plugin` listed active path plugins in current-beta probes for both
+  //   forms, but remains non-authoritative; use logs and catalog behavior.
+  // ---------------------------------------------------------------------------
+} 

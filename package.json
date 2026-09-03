@@ -1,0 +1,24 @@
+{
+  "name": "opencode-v2-model-discovery",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "description": "Discover models from OpenAI-compatible /models endpoints and enrich the OpenCode v2 catalog.",
+  "scripts": {
+    "typecheck": "bunx --bun typescript --noEmit -p tsconfig.json",
+    "smoke": "bun run ./smoke.ts"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "beta",
+    "@opencode-ai/sdk": "beta",
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.8.0"
+  }
+}
